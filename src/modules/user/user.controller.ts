@@ -1,35 +1,72 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import {
-    Connection,
-    PublicKey,
-    Keypair,
-    SystemProgram,
-    LAMPORTS_PER_SOL,
-    Transaction,
-  } from "@solana/web3.js";
+import {  Keypair } from "@solana/web3.js";
 import dotenv from 'dotenv';
-import bs58 from 'bs58';
-dotenv.config();
+import { User } from './models/user.model';
+import { Security } from './models/user.security.model';
+import { encrypt } from '../../utils/encryption';
+import { generateRecoveryPhrase, hashRecoveryPhrase, hashWords } from '../../utils/generate';
 
-const DEVNET_URL = process.env.QUICKNODE_RPC_URL!
+dotenv.config();
 
 const wallet = {
     async createWallet(
         request: FastifyRequest<{
             Body: {
-                account_name: string;
+                wallet_name: string;
             };
         }>,
         reply: FastifyReply
     ) {
       try {
-        const { account_name } = request.body
-        const connection = new Connection(DEVNET_URL!, "confirmed");
+        const wallet_name = request.body.wallet_name
+        if(!request.body.wallet_name){
+            return reply.code(400).send({
+                status: 400,
+                success: true,
+                message: "Wallet name is required",
+            });
+        }
         
         const wallet = Keypair.generate();
 
         const publicAddress = wallet.publicKey.toString()
         const privateAddress = Buffer.from(wallet.secretKey).toString("base64")
+
+        const user = await User.create({
+            username: wallet_name
+        })
+
+        const hashedPrivateKey = encrypt(privateAddress)
+
+        let recoveryPhrase = '';
+        let recoveryPhraseHash = '';
+        let recoveryWordHashes;
+        let isDuplicate = true;
+      
+        while (isDuplicate) {
+          recoveryPhrase = generateRecoveryPhrase();
+          recoveryPhraseHash = await hashRecoveryPhrase(recoveryPhrase);
+          recoveryWordHashes = hashWords(recoveryPhrase);
+          isDuplicate = await isDuplicateRecoveryPhrase(recoveryWordHashes);
+        }
+
+        const userSecurity = await Security.create({
+            userId: user._id,
+            private_key: hashedPrivateKey,
+            recoveryPhraseHash: recoveryPhraseHash,
+            recoveryWordHashes: recoveryWordHashes
+        })
+        console.log(userSecurity)
+
+        const updatedUser = await User.findOneAndUpdate(
+            {
+                _id: user._id
+            },
+            {
+                securityId: userSecurity._id
+            }
+        )
+        console.log(updatedUser)
         
         return reply.code(200).send({
             status: 200,
@@ -48,6 +85,13 @@ const wallet = {
     },
 
     
+}
+
+async function isDuplicateRecoveryPhrase(hashIdentifier: Record<number, string>): Promise<boolean> {
+    const existing = await Security.findOne({
+      where: { recoveryWordHashes: hashIdentifier },
+    });
+    return !!existing;
 }
 
 export default wallet

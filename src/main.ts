@@ -1,13 +1,13 @@
 import fastify from 'fastify';
+import userRoutes from './modules/user/user.route';
 import walletRoutes from './modules/wallet/wallet.route';
-
-const uuidv4 = require('uuid').v4;
-
 import dotenv from 'dotenv';
+import connectDB from './config/database';
 dotenv.config();
 
 export const port = Number(process.env.PORT) || 3000;
 
+const uuidv4 = require('uuid').v4;
 export const server = fastify({
   logger: true,
   genReqId(req) {
@@ -35,10 +35,12 @@ async function main() {
       });
     });
 
+  server.register(userRoutes, { prefix: 'api/user/' })
   server.register(walletRoutes, { prefix: 'api/wallet/' })
 
   try {
     await server.listen({ port: port });
+    await connectDB()
     console.log('Server ready on port', port);
   } catch (e) {
     console.log(e);

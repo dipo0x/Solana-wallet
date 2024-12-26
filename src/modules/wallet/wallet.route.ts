@@ -2,9 +2,6 @@ import { FastifyInstance } from 'fastify';
 import walletController from './wallet.controller';
 
 async function walletRoutes(server: FastifyInstance) {
-  server.get('/create-wallet', {
-    handler: walletController.createWallet
-  })
   server.post('/send-sol', {
     handler: walletController.sendOut
   })

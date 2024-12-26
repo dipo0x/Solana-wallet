@@ -14,32 +14,6 @@ dotenv.config();
 const DEVNET_URL = process.env.QUICKNODE_RPC_URL!
 
 const wallet = {
-    async createWallet(
-        request: FastifyRequest,
-        reply: FastifyReply
-    ) {
-      try {
-    
-        const wallet = Keypair.generate();
-
-        return reply.code(200).send({
-            status: 200,
-            success: false,
-            message: {
-                publicAddress: wallet.publicKey.toString(),
-                privateAddress: Buffer.from(wallet.secretKey).toString("base64")
-            },
-        });
-
-    } catch (e) {
-        return reply.code(500).send({
-          status: 500,
-          success: false,
-          message: e,
-        });
-      }
-    },
-
     async sendOut(
         request: FastifyRequest<{
             Body: {
