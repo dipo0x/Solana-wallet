@@ -11,7 +11,8 @@ import dotenv from 'dotenv';
 import bs58 from 'bs58';
 dotenv.config();
 
-const QUICKNODE_RPC_URL = process.env.QUICKNODE_RPC_URL!
+const DEVNET_URL = process.env.QUICKNODE_RPC_URL!
+
 const wallet = {
     async createWallet(
         request: FastifyRequest,
@@ -20,7 +21,6 @@ const wallet = {
       try {
     
         const wallet = Keypair.generate();
-        // const connection = new Connection(QUICKNODE_RPC_URL, "confirmed");
 
         return reply.code(200).send({
             status: 200,
@@ -52,7 +52,7 @@ const wallet = {
     ) {
       try {
         const { sender_private_key, recipent_public_key, amount } = request.body
-        const connection = new Connection(process.env.SOLANA_DEVNET_API!, "confirmed");
+        const connection = new Connection(DEVNET_URL!, "confirmed");
         
         const privateKey = bs58.decode(sender_private_key);
         if (privateKey.length !== 64) {
@@ -96,7 +96,7 @@ const wallet = {
     ) {
       try {
         const public_key = request.headers["public_key"];
-        const connection = new Connection(process.env.SOLANA_DEVNET_API!, "confirmed");
+        const connection = new Connection(DEVNET_URL, "confirmed");
 
         const publicKey = new PublicKey(public_key);
 

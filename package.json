@@ -4,7 +4,8 @@
     "typescript": "^5.7.2"
   },
   "scripts": {
-    "dev": "tsx watch src/main.ts"
+    "dev": "tsx watch src/main.ts",
+    "postinstall": "tsc"
   },
   "dependencies": {
     "@solana/web3.js": "^1.98.0",
