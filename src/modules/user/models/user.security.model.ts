@@ -1,15 +1,11 @@
 import { Schema, Types, model } from "mongoose";
-import IUserSecurity from "../../../types/user/user.type";
+import IUserSecurity from "../../../types/user/user.security";
 
-const userSecuritySchema = new Schema(
+const userSecuritySchema = new Schema <IUserSecurity> (
   {
     userId: {
-      type: Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
-    },
-    private_key: {
-      type: String,
-      required: true,
     },
     recoveryPhraseHash: {
       type: String,

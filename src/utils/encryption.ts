@@ -5,7 +5,6 @@ dotenv.config();
 const encryptionKey = process.env.ENCRYPTION_KEY!
 const iv = process.env.IV!
 
-
 export function encrypt(text: string): string {
     const cipher = crypto.createCipheriv('aes-256-cbc', encryptionKey, iv);
     let encrypted = cipher.update(text, 'utf8', 'hex');

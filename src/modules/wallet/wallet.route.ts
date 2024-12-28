@@ -5,9 +5,6 @@ async function walletRoutes(server: FastifyInstance) {
   server.post('/send-sol', {
     handler: walletController.sendOut
   })
-//   server.post('/get-balance-with-transactions', {
-//     handler: walletController.sendOut
-//   })
   server.get('/retrieve-balance-with-transactions', {
     handler: walletController.getBalanceWithTransactions
   })

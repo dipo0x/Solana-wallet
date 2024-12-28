@@ -1,10 +1,9 @@
-import { Document, Types } from "mongoose";
+import mongoose, { Document, Types } from "mongoose";
+import { ICoin } from "../coin/coin.type";
 
 interface IWallet extends Document {
-  _id: string;
-  user: Types.ObjectId;
-  private_address: string;
-  public_address: string;
+    user: mongoose.Types.ObjectId
+    coins: ICoin['_id'][];
 }
 
 export default IWallet;

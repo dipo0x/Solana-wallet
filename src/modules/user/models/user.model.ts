@@ -1,16 +1,20 @@
 import { Schema, Types, model } from "mongoose";
 import IUserDocument from "../../../types/user/user.type";
 
-const userSchema = new Schema(
+const userSchema = new Schema <IUserDocument> (
   {
     securityId: {
-      type: Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "UserSecurity",
     },
     username: {
       type: String,
       required: true,
     },
+    wallets: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Wallet'
+    }],
 },
   {
     timestamps: true
