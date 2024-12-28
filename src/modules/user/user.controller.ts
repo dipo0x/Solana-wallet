@@ -1,10 +1,11 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import {  Keypair } from "@solana/web3.js";
+import { Keypair } from "@solana/web3.js";
 import dotenv from 'dotenv';
 import { User } from './models/user.model';
 import { Security } from './models/user.security.model';
 import { encrypt } from '../../utils/encryption';
 import { generateRecoveryPhrase, hashRecoveryPhrase, hashWords } from '../../utils/generate';
+import { encryptData } from '../../services/encryptionService';
 
 dotenv.config();
 
@@ -36,18 +37,19 @@ const wallet = {
             username: wallet_name
         })
 
-        const hashedPrivateKey = encrypt(privateAddress)
+        const hashedPrivateKey = await encryptData(privateAddress)
+        console.log(hashedPrivateKey)
 
         let recoveryPhrase = '';
         let recoveryPhraseHash = '';
         let recoveryWordHashes;
         let isDuplicate = true;
-      
+
         while (isDuplicate) {
-          recoveryPhrase = generateRecoveryPhrase();
-          recoveryPhraseHash = await hashRecoveryPhrase(recoveryPhrase);
-          recoveryWordHashes = hashWords(recoveryPhrase);
-          isDuplicate = await isDuplicateRecoveryPhrase(recoveryWordHashes);
+            recoveryPhrase = generateRecoveryPhrase();
+            recoveryPhraseHash = await hashRecoveryPhrase(recoveryPhrase);
+            recoveryWordHashes = hashWords(recoveryPhrase);
+            isDuplicate = await isDuplicateRecoveryPhrase(recoveryWordHashes);
         }
 
         const userSecurity = await Security.create({
@@ -56,9 +58,8 @@ const wallet = {
             recoveryPhraseHash: recoveryPhraseHash,
             recoveryWordHashes: recoveryWordHashes
         })
-        console.log(userSecurity)
 
-        const updatedUser = await User.findOneAndUpdate(
+        await User.findOneAndUpdate(
             {
                 _id: user._id
             },
@@ -66,30 +67,27 @@ const wallet = {
                 securityId: userSecurity._id
             }
         )
-        console.log(updatedUser)
         
         return reply.code(200).send({
             status: 200,
             success: true,
-            message: `Account created successfully`,
-          });
-      }
-      catch (e) {
+            message: `Account created successfully. Here is your recovery phrase: ${recoveryPhrase}`,
+        });
+    }
+    catch (e) {
         console.log(e)
         return reply.code(500).send({
-          status: 500,
-          success: false,
-          message: e,
+            status: 500,
+            success: false,
+            message: e,
         });
       }
-    },
-
-    
+    }
 }
 
 async function isDuplicateRecoveryPhrase(hashIdentifier: Record<number, string>): Promise<boolean> {
     const existing = await Security.findOne({
-      where: { recoveryWordHashes: hashIdentifier },
+        where: { recoveryWordHashes: hashIdentifier },
     });
     return !!existing;
 }
