@@ -6,6 +6,9 @@ import { Security } from './models/user.security.model';
 import { encrypt } from '../../utils/encryption';
 import { generateRecoveryPhrase, hashRecoveryPhrase, hashWords } from '../../utils/generate';
 import { encryptData } from '../../services/encryptionService';
+import Wallet from '../wallet/models/wallet.model';
+import { Coin, Network } from '../wallet/models/wallet.coin.model';
+import mongoose from 'mongoose';
 
 dotenv.config();
 
@@ -38,7 +41,6 @@ const wallet = {
         })
 
         const hashedPrivateKey = await encryptData(privateAddress)
-        console.log(hashedPrivateKey)
 
         let recoveryPhrase = '';
         let recoveryPhraseHash = '';
@@ -67,7 +69,32 @@ const wallet = {
                 securityId: userSecurity._id
             }
         )
-        
+
+        const network = await Network.create({
+            name: 'Solana',
+            privateAddress: hashedPrivateKey,
+            publicAddress,
+            coinId: null,
+        });
+
+        const coin = await Coin.create({
+            name: 'Solana',
+            symbol: 'SOL',
+            walletId: null,
+            networks: [network._id],
+        });
+
+        network.coinId = coin._id as mongoose.Types.ObjectId;
+        await network.save();
+
+        const userWallet = await Wallet.create({
+            user: user._id,
+            coins: [coin._id],
+        });
+
+        coin.walletId = userWallet._id as mongoose.Types.ObjectId;
+        await coin.save();
+
         return reply.code(200).send({
             status: 200,
             success: true,

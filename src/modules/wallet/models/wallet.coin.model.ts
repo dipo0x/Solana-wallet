@@ -6,7 +6,7 @@ const networkSchema = new Schema<INetwork>({
     name: { type: String, required: true },
     privateAddress: {  type: String, required: true },
     publicAddress: { type: String, required: true },
-    coinId: { type: Schema.Types.ObjectId, required: true},
+    coinId: { type: Schema.Types.ObjectId, required: false },
 });
 
 const Network = model<INetwork>('Network', networkSchema);
@@ -14,7 +14,7 @@ const Network = model<INetwork>('Network', networkSchema);
 const coinSchema = new Schema<ICoin>({
     name: { type: String, required: true },
     symbol: { type: String, required: true },
-    walletId: { type: Schema.Types.ObjectId, required: true},
+    walletId: { type: Schema.Types.ObjectId, required: false },
     networks: [{ type: Schema.Types.ObjectId, ref: 'Network' }],
 });
 
