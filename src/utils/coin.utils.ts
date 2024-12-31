@@ -1,24 +1,16 @@
 import { Coin } from '../modules/wallet/models/wallet.coin.model';
 import { Network } from '../modules/wallet/models/wallet.coin.model';
 import { Types } from 'mongoose';
+import Wallet from '../modules/wallet/models/wallet.model';
 
-interface CreateCoinAndNetworkInput {
-    coinName: string;
-    coinSymbol: string;
-    walletId: string;
-    networkName: string;
-    privateAddress: string;
-    publicAddress: string;
-}
-
-const createCoinAndNetwork = async ({
-    coinName,
-    coinSymbol,
-    walletId,
-    networkName,
-    privateAddress,
-    publicAddress,
-}: CreateCoinAndNetworkInput) => {
+export const createCoinAndNetwork = async (
+    coinName: string,
+    coinSymbol: string,
+    walletId: Types.ObjectId,
+    networkName: string,
+    privateAddress: string,
+    publicAddress: string,
+) => {
     try {
         if (!Types.ObjectId.isValid(walletId)) {
             throw new Error('Invalid walletId provided');
@@ -38,6 +30,9 @@ const createCoinAndNetwork = async ({
         });
 
         coin.networks.push(network._id);
+        
+        const wallet = await Wallet.findById(walletId);
+        wallet?.coins.push(coin._id)
         await coin.save();
 
         return { coin, network };

@@ -3,12 +3,15 @@ import { Keypair } from "@solana/web3.js";
 import dotenv from 'dotenv';
 import { User } from './models/user.model';
 import { Security } from './models/user.security.model';
-import { encrypt } from '../../utils/encryption';
-import { generateRecoveryPhrase, hashRecoveryPhrase, hashWords } from '../../utils/generate';
+import { encrypt } from '../../utils/encryption.utils';
+import { generateRecoveryPhrase, hashRecoveryPhrase, hashWords } from '../../utils/generate.utils';
 import { encryptData } from '../../services/encryptionService';
 import Wallet from '../wallet/models/wallet.model';
 import { Coin, Network } from '../wallet/models/wallet.coin.model';
 import mongoose from 'mongoose';
+import { generateOnboardingAddresses } from '../../helpers/onboardingWallets.helpers';
+import { validateRecoveryPhrase } from '../../utils/validate';
+import { signToken } from '../../utils/jwt';
 
 dotenv.config();
 
@@ -40,8 +43,6 @@ const wallet = {
             username: wallet_name
         })
 
-        const hashedPrivateKey = await encryptData(privateAddress)
-
         let recoveryPhrase = '';
         let recoveryPhraseHash = '';
         let recoveryWordHashes;
@@ -56,7 +57,7 @@ const wallet = {
 
         const userSecurity = await Security.create({
             userId: user._id,
-            private_key: hashedPrivateKey,
+            private_key: privateAddress,
             recoveryPhraseHash: recoveryPhraseHash,
             recoveryWordHashes: recoveryWordHashes
         })
@@ -72,7 +73,7 @@ const wallet = {
 
         const network = await Network.create({
             name: 'Solana',
-            privateAddress: hashedPrivateKey,
+            privateAddress,
             publicAddress,
             coinId: null,
         });
@@ -95,10 +96,56 @@ const wallet = {
         coin.walletId = userWallet._id as mongoose.Types.ObjectId;
         await coin.save();
 
+        await generateOnboardingAddresses(userWallet._id  as mongoose.Types.ObjectId)
+
         return reply.code(200).send({
             status: 200,
             success: true,
             message: `Account created successfully. Here is your recovery phrase: ${recoveryPhrase}`,
+        });
+    }
+    catch (e) {
+        console.log(e)
+        return reply.code(500).send({
+            status: 500,
+            success: false,
+            message: e,
+        });
+      }
+    },
+    async loginWallet(
+        request: FastifyRequest<{
+            Body: {
+                key_phrases: string;
+            };
+        }>,
+        reply: FastifyReply
+    ) {
+      try {
+        const { key_phrases } = request.body
+        if(!key_phrases){
+            return reply.code(400).send({
+                status: 400,
+                success: true,
+                message: "Key phrases are required",
+            });
+        }
+
+        const user = await validateRecoveryPhrase(key_phrases);
+        if(!user){
+            return reply.status(400).send({
+                success: false,
+                message: 'Incorrect key phrases.',
+                user,
+            }); 
+        }
+        const token = await signToken(user)
+
+        return reply.status(200).send({
+            success: true,
+            message: 'User validated successfully.',
+            user,
+            token
         });
     }
     catch (e) {

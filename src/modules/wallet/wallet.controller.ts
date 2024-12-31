@@ -65,7 +65,11 @@ const wallet = {
     },
 
     async getBalanceWithTransactions(
-        request: FastifyRequest,
+        request: FastifyRequest<{
+          Headers: {
+            public_key: string
+          }
+        }>,
         reply: FastifyReply
     ) {
       try {
