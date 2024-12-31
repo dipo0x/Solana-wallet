@@ -1,8 +1,8 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { Keypair } from "@solana/web3.js";
 import dotenv from 'dotenv';
-import { User } from './models/user.model';
-import { Security } from './models/user.security.model';
+import { User } from '../user/models/user.model';
+import { Security } from '../user/models/user.security.model';
 import { encrypt } from '../../utils/encryption.utils';
 import { generateRecoveryPhrase, hashRecoveryPhrase, hashWords } from '../../utils/generate.utils';
 import { encryptData } from '../../services/encryptionService';
