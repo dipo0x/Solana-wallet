@@ -1,5 +1,6 @@
 import fastify from 'fastify';
 import indexRoutes from './modules/index/index.route';
+import accountRoutes from './modules/account/account.route';
 import userRoutes from './modules/user/user.route';
 import walletRoutes from './modules/wallet/wallet.route';
 import dotenv from 'dotenv';
@@ -33,12 +34,13 @@ async function main() {
       return reply.code(404).send({
         status: 404,
         success: false,
-        message: 'Page does not exist',
+        message: `You shouldn't be here bro!`,
       });
     });
 
   server.register(indexRoutes, { prefix: '/' })
   server.register(userRoutes, { prefix: 'api/user/' })
+  server.register(accountRoutes, { prefix: 'api/account/' })
   server.register(walletRoutes, { prefix: 'api/wallet/' })
 
   try {

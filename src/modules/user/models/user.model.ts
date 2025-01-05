@@ -11,6 +11,11 @@ const userSchema = new Schema <IUserDocument> (
       type: String,
       required: true,
     },
+    profile_picture: {
+      type: String,
+      required: false,
+      default: ""
+    },
     wallets: [{
       type: Schema.Types.ObjectId,
       ref: 'Wallet'

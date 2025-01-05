@@ -92,6 +92,8 @@ const wallet = {
             user: user._id,
             coins: [coin._id],
         });
+        console.log(user)
+        console.log(userWallet)
 
         coin.walletId = userWallet._id as mongoose.Types.ObjectId;
         await coin.save();
@@ -137,7 +139,7 @@ const wallet = {
                 success: false,
                 message: 'Incorrect key phrases.',
                 user,
-            }); 
+            });
         }
         const token = await signToken(user)
 

@@ -1,13 +1,13 @@
 import { FastifyInstance } from 'fastify';
 import walletController from './wallet.controller';
-import { validateUser } from '../../middlewares/auth.middleware';
+import authenticate from '../../middlewares/auth.middleware';
 import { sendCryptoInputSchema } from './wallet.schema'
 
 async function walletRoutes(server: FastifyInstance) {
-  server.post('/send-sol', 
+  server.post('/send-sol',
     {
       schema: sendCryptoInputSchema,
-      preHandler: validateUser,
+      preHandler: authenticate,
     },
     walletController.sendOut
   )
