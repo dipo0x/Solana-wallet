@@ -1,6 +1,7 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import Wallet from '../wallet/models/wallet.model';
 import { Coin, Network } from '../wallet/models/wallet.coin.model';
+import { calculateWalletWorth } from '../../services/blockchain.service';
 
 const account = {
     async accountSettings(
@@ -70,11 +71,11 @@ const account = {
             })
             .lean()
             .exec();
+        const asset = await calculateWalletWorth(wallet!._id)
         return reply.status(200).send({
             success: true,
-            message: 'User coins fetched.',
-            user,
-            wallet
+            message: 'User asset fetched.',
+            asset
         });
     }
     catch (e) {

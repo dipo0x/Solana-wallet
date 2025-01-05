@@ -1,7 +1,7 @@
-import { Schema, model, Types } from 'mongoose';
-import { INetwork } from '../../../types/network/network.type';
+import { model, Schema } from 'mongoose';
+import { encryptData } from '../../../services/encryption.service';
 import { ICoin } from '../../../types/coin/coin.type';
-import { encryptData } from '../../../services/encryptionService';
+import { INetwork } from '../../../types/network/network.type';
 
 const networkSchema = new Schema<INetwork>({
     name: { type: String, required: true },
@@ -35,4 +35,5 @@ const coinSchema = new Schema<ICoin>({
 
 const Coin = model<ICoin>('Coin', coinSchema);
 
-export { Coin, Network  };
+export { Coin, Network };
+

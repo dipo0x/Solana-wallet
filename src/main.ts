@@ -4,7 +4,7 @@ import accountRoutes from './modules/account/account.route';
 import userRoutes from './modules/user/user.route';
 import walletRoutes from './modules/wallet/wallet.route';
 import dotenv from 'dotenv';
-import connectDB from './config/database';
+import connectDB from './config/database.config';
 dotenv.config();
 
 export const port = Number(process.env.PORT) || 3000;

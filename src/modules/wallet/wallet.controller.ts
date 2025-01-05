@@ -1,6 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import {
-    Connection,
     PublicKey,
     Keypair,
     SystemProgram,
@@ -9,9 +8,8 @@ import {
   } from "@solana/web3.js";
 import dotenv from 'dotenv';
 import bs58 from 'bs58';
+import { solanaConnection } from '../../config/solana.config';
 dotenv.config();
-
-const DEVNET_URL = process.env.QUICKNODE_RPC_URL!
 
 const wallet = {
     async sendOut(
@@ -26,7 +24,7 @@ const wallet = {
     ) {
       try {
         const { sender_private_key, recipent_public_key, amount } = request.body
-        const connection = new Connection(DEVNET_URL!, "confirmed");
+        const connection = await solanaConnection()
         
         const privateKey = bs58.decode(sender_private_key);
         if (privateKey.length !== 64) {
@@ -74,7 +72,7 @@ const wallet = {
     ) {
       try {
         const public_key = request.headers["public_key"];
-        const connection = new Connection(DEVNET_URL, "confirmed");
+        const connection = await solanaConnection()
 
         const publicKey = new PublicKey(public_key);
 
