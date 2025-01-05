@@ -62,14 +62,7 @@ const wallet = {
             recoveryWordHashes: recoveryWordHashes
         })
 
-        await User.findOneAndUpdate(
-            {
-                _id: user._id
-            },
-            {
-                securityId: userSecurity._id
-            }
-        )
+        user.securityId = new mongoose.Types.ObjectId(userSecurity._id)
 
         const network = await Network.create({
             name: 'Solana',
@@ -92,11 +85,11 @@ const wallet = {
             user: user._id,
             coins: [coin._id],
         });
-        console.log(user)
-        console.log(userWallet)
-
         coin.walletId = userWallet._id as mongoose.Types.ObjectId;
         await coin.save();
+
+        user.walletId = new mongoose.Types.ObjectId(userWallet._id)
+        user.save()
 
         await generateOnboardingAddresses(userWallet._id  as mongoose.Types.ObjectId)
 

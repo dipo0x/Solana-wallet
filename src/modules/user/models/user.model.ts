@@ -16,10 +16,10 @@ const userSchema = new Schema <IUserDocument> (
       required: false,
       default: ""
     },
-    wallets: [{
+    walletId: {
       type: Schema.Types.ObjectId,
       ref: 'Wallet'
-    }],
+    },
 },
   {
     timestamps: true

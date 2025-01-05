@@ -19,13 +19,12 @@ export async function validateRecoveryPhrase(submittedPhrase: string): Promise<a
     recoveryWordHashes: wordHashes,
   });
 
-  console.log(securityRecord)
   if (!securityRecord) {
     return null
   }
 
   const isFullHashValid = await bcrypt.compare(submittedPhrase, securityRecord.recoveryPhraseHash);
-  console.log(isFullHashValid)
+
   if (!isFullHashValid) {
     return null
   }

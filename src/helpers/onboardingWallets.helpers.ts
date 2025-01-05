@@ -7,12 +7,9 @@ const { NETWORK_ENVIRONMENT } = process.env
 
 export const generateOnboardingAddresses = async ( walletId: Types.ObjectId ) => {
     try{
-        const wallet = Wallet.createRandom();
-
-        const privateKey = wallet.privateKey;
-        const publicAddress = wallet.address;
-    
-        await createCoinAndNetwork("Ethereum", "ETH", walletId, `Ethereum ${NETWORK_ENVIRONMENT}`, privateKey, publicAddress)
+        await createCoinAndNetwork("Ethereum", "ETH", walletId, `Ethereum ${NETWORK_ENVIRONMENT}`, Wallet.createRandom().privateKey,  Wallet.createRandom().address)
+        await createCoinAndNetwork("Binance Coin", "BNB", walletId, `Binance Smart Chain (BSC)`,  Wallet.createRandom().privateKey,  Wallet.createRandom().address)
+        await createCoinAndNetwork("Tether", "USDT", walletId, `Binance Smart Chain (BSC)`,  Wallet.createRandom().privateKey,  Wallet.createRandom().address)
     }
     catch(e){
         console.log(e)

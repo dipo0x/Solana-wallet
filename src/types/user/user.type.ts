@@ -6,8 +6,7 @@ interface IUser extends Document {
   username: string;
   profile_picture: string;
   securityId: Types.ObjectId;
-  wallets: IWallet['_id'][];
-  wallet: string;
+  walletId: IWallet['_id'];
   createdAt: Date;
   updatedAt: Date;
 }

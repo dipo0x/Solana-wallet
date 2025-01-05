@@ -12,6 +12,7 @@
   "dependencies": {
     "@google-cloud/kms": "^4.5.0",
     "@solana/web3.js": "^1.98.0",
+    "axios": "^1.7.9",
     "b58": "^4.0.3",
     "bcrypt": "^5.1.1",
     "bip39": "^3.1.0",
