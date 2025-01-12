@@ -6,12 +6,14 @@ import { INetwork } from '../types/network/network.type';
 import { ethers } from 'ethers';
 import { solanaConnection } from '../config/solana.config';
 import { PublicKey } from '@solana/web3.js';
+import { JsonRpcProvider } from 'ethers';
+import { formatEther } from 'ethers'; 
 
 export const calculateWalletWorth = async (
     walletId: Types.ObjectId
 ) => 
     {
-    const totalWorth: { [key: string]: number } = {};
+    const totalWorth: { [key: string]: { coinTotalWorth: number, balance: number } } = {};
     let totalPortfolioValue = 0;
     const coins = await Coin.find({ walletId })
         .populate<{
@@ -27,20 +29,24 @@ export const calculateWalletWorth = async (
     }
 
     for (const coin of coins) {
-        console.log(`Fetching data for coin: ${coin.name} (${coin.symbol})`);
         let coinTotalWorth = 0;
-
+        let totalCoinBalance = 0;
+    
         for (const network of coin.networks) {
             const balance = await getBalanceFromChain(network.publicAddress, network.name);
-
             const usdPrice = await getPriceInUSD(coin.name);
             const networkWorth = balance * usdPrice;
-
+    
             coinTotalWorth += networkWorth;
+            totalCoinBalance += balance;
         }
-
-        totalWorth[coin.name] = coinTotalWorth;
-        totalPortfolioValue += coinTotalWorth;
+    
+        totalWorth[coin.name] = {
+            coinTotalWorth,
+            balance: totalCoinBalance,
+        };
+    
+        totalPortfolioValue += coinTotalWorth
     }
     return { totalPortfolioValue, totalWorth };
 }
@@ -69,7 +75,7 @@ const RPC_URLS: { [key: string]: string } = {
 
 // USDT Contract Addresses on Ethereum and BSC
 const USDT_CONTRACT_ADDRESSES: { [key: string]: string } = {
-    Ethereum: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+    Ethereum: "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4",
     Binance: "0x55d398326f99059fF775485246999027B3197955",
 };
 
@@ -81,20 +87,21 @@ const USDT_CONTRACT_ADDRESSES: { [key: string]: string } = {
  */
 export const getBalanceFromChain = async (
     publicAddress: string,
-    networkName: string
+    coinName: string
 ): Promise<number> => {
     try {
-        if (networkName === "Solana") {
+        console.log(publicAddress, coinName)
+        if (coinName === "Solana") {
             const connection = await solanaConnection()
             const publicKey = new PublicKey(publicAddress);
             const balance = await connection.getBalance(publicKey);
             return balance / 1e9;
         }
 
-        if (networkName === "Ethereum" || networkName === "Binance") {
-            const rpcUrl = RPC_URLS[networkName];
+        if (coinName === "Ethereum") {
+            const rpcUrl = RPC_URLS[coinName];
             if (!rpcUrl) {
-                throw new Error(`RPC URL not found for network: ${networkName}`);
+                throw new Error(`RPC URL not found for network: ${coinName}`);
             }
 
             const provider = new ethers.JsonRpcProvider(rpcUrl);
@@ -102,28 +109,30 @@ export const getBalanceFromChain = async (
             return parseFloat(ethers.formatEther(balance));
         }
 
-        if (networkName === "USDT") {
-            const contractAddress =
-                publicAddress.toLowerCase().includes("eth")
-                    ? USDT_CONTRACT_ADDRESSES.Ethereum
-                    : USDT_CONTRACT_ADDRESSES.Binance;
+        if (coinName === "Binance Smart Chain (BSC)") {
+            const provider = new JsonRpcProvider(process.env.BSC_RPC_URL);
+            const balanceWei = await provider.getBalance(publicAddress);
+            return Number(formatEther(balanceWei))
+        }
 
-            const rpcUrl = publicAddress.toLowerCase().includes("eth")
-                ? RPC_URLS.Ethereum
-                : RPC_URLS.Binance;
+        if (coinName === "USDT") {
+            const contractAddress = USDT_CONTRACT_ADDRESSES.Ethereum
+            const rpcUrl = RPC_URLS.Binance
 
             const provider = new ethers.JsonRpcProvider(rpcUrl);
 
             const usdtAbi = ["function balanceOf(address account) view returns (uint256)"];
             const usdtContract = new ethers.Contract(contractAddress, usdtAbi, provider);
+            console.log(usdtContract)
 
             const balance = await usdtContract.balanceOf(publicAddress);
+            console.log(balance)
             return parseFloat(ethers.formatUnits(balance, 6))
         }
 
-        throw new Error(`Unsupported network: ${networkName}`);
+        throw new Error(`Unsupported network: ${coinName}`);
     } catch (error) {
-        console.error(`Error fetching balance for ${networkName}:`, error);
+        console.error(`Error fetching balance for ${coinName}:`, error);
         return 0;
     }
 };

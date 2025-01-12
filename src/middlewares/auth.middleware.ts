@@ -56,7 +56,15 @@ export default async function authenticate(
         message: 'Invalid token',
       });
     }
-
+    if (err.name === 'TokenExpiredError') {
+      return reply.code(401).send({
+        status: 401,
+        success: false,
+        message: 'Authentication expired. Please login again.',
+      });
+    }
+    
+    console.log(err)
     return reply.code(500).send({
       status: 500,
       success: false,
