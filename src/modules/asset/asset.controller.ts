@@ -2,13 +2,16 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { calculateWalletWorth, getPriceInUSD } from '../../services/generic/blockchain.service';
 import { Coin, Network } from '../wallet/models/wallet.coin.model';
 import Wallet from '../wallet/models/wallet.model';
-import { calculateSolanaBalance24HoursAgo, getTransactionDetailsWithAmount } from '../../services/solana/solana.service';
+import {
+    calculateSolanaBalance24HoursAgo,
+    getTransactionDetailsWithAmount
+} from '../../services/solana/solana.service';
 import { INetwork } from '../../types/network/network.type';
 import { solanaConnection } from '../../config/solana.config';
 import {
     PublicKey,
     LAMPORTS_PER_SOL,
-  } from "@solana/web3.js";
+} from "@solana/web3.js";
 import { calculatePnL } from '../../utils/coin.utils';
 import ITransaction from '../../types/transaction/transaction.type';
 
