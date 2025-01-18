@@ -1,19 +1,16 @@
-import { Coin } from '../modules/wallet/models/wallet.coin.model';
-import { Network } from '../modules/wallet/models/wallet.coin.model';
-import { Types } from 'mongoose';
-import axios from "axios";
-import { INetwork } from '../types/network/network.type';
-import { ethers } from 'ethers';
-import { solanaConnection } from '../config/solana.config';
 import { PublicKey } from '@solana/web3.js';
-import { JsonRpcProvider } from 'ethers';
-import { formatEther } from 'ethers'; 
+import axios from "axios";
+import { ethers, formatEther, JsonRpcProvider } from 'ethers';
+import { Types } from 'mongoose';
+import { solanaConnection } from '../../config/solana.config';
+import { Coin, Network } from '../../modules/wallet/models/wallet.coin.model';
+import { INetwork } from '../../types/network/network.type';
 
 export const calculateWalletWorth = async (
     walletId: Types.ObjectId
 ) => 
     {
-    const totalWorth: { [key: string]: { coinTotalWorth: number, balance: number } } = {};
+    const totalWorth: { [key: string]: { coinTotalWorth: number, balance: number, id: Types.ObjectId } } = {};
     let totalPortfolioValue = 0;
     const coins = await Coin.find({ walletId })
         .populate<{
@@ -44,6 +41,7 @@ export const calculateWalletWorth = async (
         totalWorth[coin.name] = {
             coinTotalWorth,
             balance: totalCoinBalance,
+            id: coin._id
         };
     
         totalPortfolioValue += coinTotalWorth
@@ -51,8 +49,8 @@ export const calculateWalletWorth = async (
     return { totalPortfolioValue, totalWorth };
 }
 
-const getPriceInUSD = async (symbol: string): Promise<number> => {
-    const pricingApi = `https://api.coingecko.com/api/v3/simple/price`;
+export const getPriceInUSD = async (symbol: string): Promise<number> => {
+    const pricingApi = process.env.COINGECKO_URL!
     try {
         const response = await axios.get(pricingApi, {
             params: {
@@ -73,24 +71,11 @@ const RPC_URLS: { [key: string]: string } = {
     Binance: process.env.BSC_RPC_URL!
 };
 
-// USDT Contract Addresses on Ethereum and BSC
-const USDT_CONTRACT_ADDRESSES: { [key: string]: string } = {
-    Ethereum: "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4",
-    Binance: "0x55d398326f99059fF775485246999027B3197955",
-};
-
-/**
- * Fetch balance for Solana, Ethereum, Binance Smart Chain, and USDT.
- * @param publicAddress The wallet address.
- * @param networkName The network name (e.g., Solana, Ethereum, Binance, USDT).
- * @returns The balance in native tokens or USDT (as applicable).
- */
 export const getBalanceFromChain = async (
     publicAddress: string,
     coinName: string
 ): Promise<number> => {
     try {
-        console.log(publicAddress, coinName)
         if (coinName === "Solana") {
             const connection = await solanaConnection()
             const publicKey = new PublicKey(publicAddress);
@@ -113,21 +98,6 @@ export const getBalanceFromChain = async (
             const provider = new JsonRpcProvider(process.env.BSC_RPC_URL);
             const balanceWei = await provider.getBalance(publicAddress);
             return Number(formatEther(balanceWei))
-        }
-
-        if (coinName === "USDT") {
-            const contractAddress = USDT_CONTRACT_ADDRESSES.Ethereum
-            const rpcUrl = RPC_URLS.Binance
-
-            const provider = new ethers.JsonRpcProvider(rpcUrl);
-
-            const usdtAbi = ["function balanceOf(address account) view returns (uint256)"];
-            const usdtContract = new ethers.Contract(contractAddress, usdtAbi, provider);
-            console.log(usdtContract)
-
-            const balance = await usdtContract.balanceOf(publicAddress);
-            console.log(balance)
-            return parseFloat(ethers.formatUnits(balance, 6))
         }
 
         throw new Error(`Unsupported network: ${coinName}`);

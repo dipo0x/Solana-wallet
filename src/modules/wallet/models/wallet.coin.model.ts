@@ -1,5 +1,5 @@
 import { model, Schema } from 'mongoose';
-import { encryptData } from '../../../services/encryption.service';
+import { encryptData } from '../../../services/google/encryption.service';
 import { ICoin } from '../../../types/coin/coin.type';
 import { INetwork } from '../../../types/network/network.type';
 

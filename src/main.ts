@@ -3,6 +3,7 @@ import indexRoutes from './modules/index/index.route';
 import accountRoutes from './modules/account/account.route';
 import userRoutes from './modules/user/user.route';
 import walletRoutes from './modules/wallet/wallet.route';
+import assetRoutes from './modules/asset/asset.route';
 import dotenv from 'dotenv';
 import connectDB from './config/database.config';
 dotenv.config();
@@ -42,6 +43,7 @@ async function main() {
   server.register(userRoutes, { prefix: 'api/user/' })
   server.register(accountRoutes, { prefix: 'api/account/' })
   server.register(walletRoutes, { prefix: 'api/wallet/' })
+  server.register(assetRoutes, { prefix: 'api/asset/' })
 
   try {
     await server.listen({ host: host, port: port });

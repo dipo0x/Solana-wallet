@@ -8,12 +8,6 @@ async function accountRoutes(server: FastifyInstance) {
       preHandler: authenticate,
     },
     accountController.accountSettings
-  ),
-  server.get('/assets',
-    {
-      preHandler: authenticate,
-    },
-    accountController.getAssetsDetails
   )
 }
 

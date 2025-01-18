@@ -42,3 +42,18 @@ export const createCoinAndNetwork = async (
         throw new Error('Failed to create Coin and Network');
     }
 };
+
+export const calculatePnL = (
+    currentValue: number,
+    previousValue: number,
+) => {
+    try {
+        if (!previousValue || !currentValue) {
+            throw new Error ("Missing values")
+        }
+        const value = ((currentValue - previousValue) / previousValue) * 100;
+        return Number(value.toFixed(2))
+    } catch (error) {
+        console.error('Error calculating PnL', error);
+    }
+};
