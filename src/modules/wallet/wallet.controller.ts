@@ -15,7 +15,7 @@ import { ApiResponse } from "../../utils/apiResponse";
 dotenv.config();
 
 /**
- * @author Okpe Onoja Godwin
+ * @author Oladipo Adesiyan
  * @description SEND SOL TRANSACTION
  * @route `/api/v1/wallet/send-sol`
  * @access Private
@@ -73,7 +73,7 @@ export async function
 }
 
 /**
- * @author Okpe Onoja Godwin
+ * @author Oladipo Adesiyan
  * @description GET BALANCE + TRANSACTIONS
  * @route `/api/v1/wallet/settings`
  * @access Private

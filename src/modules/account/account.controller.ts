@@ -4,7 +4,7 @@ import { ApiResponse } from '../../utils/apiResponse';
 import logger from '../../utils/logger';
 
 /**
- * @author Okpe Onoja Godwin
+ * @author Oladipo Adesiyan
  * @description Account Settings
  * @route `/api/v1/account/settings`
  * @access Private

@@ -4,7 +4,7 @@ import logger from '../../utils/logger';
 import AssetService from './asset.service';
 
 /**
- * @author Okpe Onoja Godwin
+ * @author Oladipo Adesiyan
  * @description Fetch all user assets with their total worth and portfolio summary.
  * @route `/api/v1/asset/assets`
  * @access Private
@@ -38,7 +38,7 @@ export async function
 }
 
 /**
- * @author Okpe Onoja Godwin
+ * @author Oladipo Adesiyan
  * @descriptionFetch detailed info for a specific user asset, including balance, value, PnL, and transactions.
  * @route `/api/v1/asset/details/:id`
  * @access Private
