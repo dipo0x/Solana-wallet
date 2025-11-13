@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import assetController from './asset.controller';
+import * as assetController from './asset.controller';
 import authenticate from '../../middlewares/auth.middleware';
 
 async function assetRoutes(server: FastifyInstance) {
@@ -9,6 +9,7 @@ async function assetRoutes(server: FastifyInstance) {
     },
     assetController.getAssets
   ),
+  
   server.get('/details/:id',
     {
       preHandler: authenticate,

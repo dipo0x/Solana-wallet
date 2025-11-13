@@ -1,131 +1,77 @@
-import { FastifyReply, FastifyRequest } from 'fastify';
-import { calculateWalletWorth, getPriceInUSD } from '../../services/generic/blockchain.service';
-import { Coin, Network } from '../wallet/models/wallet.coin.model';
-import Wallet from '../wallet/models/wallet.model';
-import {
-    calculateSolanaBalance24HoursAgo,
-    getTransactionDetailsWithAmount
-} from '../../services/solana/solana.service';
-import { INetwork } from '../../types/network/network.type';
-import { solanaConnection } from '../../config/solana.config';
-import {
-    PublicKey,
-    LAMPORTS_PER_SOL,
-} from "@solana/web3.js";
-import { calculatePnL } from '../../utils/coin.utils';
-import ITransaction from '../../types/transaction/transaction.type';
+import { FastifyRequest, FastifyReply } from 'fastify';
+import { ApiResponse } from '../../utils/apiResponse';
+import logger from '../../utils/logger';
+import AssetService from './asset.service';
 
-const asset = {
-    async getAssets(
-        request: FastifyRequest,
-        reply: FastifyReply
+/**
+ * @author Okpe Onoja Godwin
+ * @description Fetch all user assets with their total worth and portfolio summary.
+ * @route `/api/v1/asset/assets`
+ * @access Private
+ * @type GET
+ */
+export async function 
+    getAssets(
+      request: FastifyRequest,
+      reply: FastifyReply
     ) {
-      try {
-        const user = request.user
-        if(!user){
-            return reply.code(404).send({
-                status: 404,
-                success: false,
-                message: "User not found",
-            });
-        }
-        const wallet = await Wallet.findOne({ user: user._id })
-            .populate({
-                path: 'coins',
-                model: Coin,
-                populate: {
-                    path: 'networks',
-                    model: Network,
-                    select: '-privateAddress',
-                },
-            })
-            .lean()
-            .exec();
-        const asset = await calculateWalletWorth(wallet!._id)
-        return reply.status(200).send({
-            success: true,
-            message: 'User asset fetched.',
-            asset
-        });
-    }
-    catch (e) {
-        console.log(e)
-        return reply.code(500).send({
-            status: 500,
-            success: false,
-            message: e,
-        });
-      }
-    },
-    async getAssetsDetails(
-        request: FastifyRequest<{
-            Params: {
-                id: string
-            }
-        }>,
-        reply: FastifyReply
-    ) {
-      try {
-        const user = request.user
-        if(!user){
-            return reply.status(400).send({
-                success: false,
-                message: 'You are not allowed to access this'
-            });
-        }
-        
-        let balance: number = 0
-        let twenty4HoursBalance = 0
-        let transactions: ITransaction[] = []
-        const coin = await Coin.findOne( { walletId: user.walletId, _id: request.params.id})
-            .populate({
-                path: 'networks',
-                model: Network
-        })
+  try {
+    const user = request.user;
 
-        if(!coin){
-            return reply.status(404).send({
-                success: false,
-                message: 'Coin not found'
-            });
-        }
-
-        switch (coin.symbol) {
-            case "SOL":
-                const networks = coin.networks as INetwork[];
-                const connection = await solanaConnection()
-                const publicKey = new PublicKey(networks[0]?.publicAddress);
-                const balanceLamports = await connection.getBalance(publicKey);
-                balance = balanceLamports / LAMPORTS_PER_SOL;
-              
-                twenty4HoursBalance = await calculateSolanaBalance24HoursAgo(
-                    networks[0]?.publicAddress
-                );
-                transactions = await getTransactionDetailsWithAmount(networks[0]?.publicAddress);
-            break;
-        }
-
-        return reply.status(200).send({
-            success: true,
-            message: 'User asset fetched.',
-            data: {
-                name: coin.name,
-                balance,
-                assetValue: await getPriceInUSD(coin.name) * balance,
-                PnL: calculatePnL(balance, twenty4HoursBalance),
-                transactions
-            }
-        });
+    if (!user) {
+      return reply
+        .status(ApiResponse.RESOURCE_NOT_FOUND)
+        .send(ApiResponse.error('User not found'));
     }
-    catch (e) {
-        console.log(e)
-        return reply.code(500).send({
-            status: 500,
-            success: false,
-            message: e,
-        });
-      }
-    }
+
+    const assets = await AssetService.getUserAssets(user._id);
+
+    return reply
+      .status(ApiResponse.OK)
+      .send(ApiResponse.success('User asset fetched successfully', assets));
+  } catch (e: any) {
+    logger.error({ err: e }, '❌ Failed to get user asset');
+    return reply
+      .status(ApiResponse.INTERNAL_SERVER_ERROR)
+      .send(ApiResponse.error('Failed to get user asset', e.message));
+  }
 }
 
-export default asset
+/**
+ * @author Okpe Onoja Godwin
+ * @descriptionFetch detailed info for a specific user asset, including balance, value, PnL, and transactions.
+ * @route `/api/v1/asset/details/:id`
+ * @access Private
+ * @type GET
+ */
+export async function
+    getAssetsDetails(
+      request: FastifyRequest<{
+        Params: 
+         {
+           id: string 
+          } 
+      }>,
+      reply: FastifyReply
+  ) {
+  try {
+    const user = request.user;
+
+    if (!user) {
+      return reply
+        .status(ApiResponse.BAD_REQUEST)
+        .send(ApiResponse.error('User not allowed'));
+    }
+
+    const details = await AssetService.getAssetDetails(user, request.params.id);
+
+    return reply
+      .status(ApiResponse.OK)
+      .send(ApiResponse.success('User asset fetched successfully', details));
+  } catch (e: any) {
+    logger.error({ err: e }, '❌ Failed to get asset details');
+    return reply
+      .status(ApiResponse.INTERNAL_SERVER_ERROR)
+      .send(ApiResponse.error('Failed to get asset details', e.message));
+  }
+}
