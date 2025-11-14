@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import userController from './user.controller';
+import * as userController from './user.controller'
 
 async function userRoutes(server: FastifyInstance) {
   server.post('create-new-wallet', {

@@ -2,6 +2,7 @@ import { Coin } from '../modules/wallet/models/wallet.coin.model';
 import { Network } from '../modules/wallet/models/wallet.coin.model';
 import mongoose, { Types } from 'mongoose';
 import Wallet from '../modules/wallet/models/wallet.model';
+import logger from './logger';
 
 export const createCoinAndNetwork = async (
     coinName: string,
@@ -38,7 +39,7 @@ export const createCoinAndNetwork = async (
 
         return { coin, network };
     } catch (error) {
-        console.error('Error creating Coin and Network:', error);
+        logger.error('Error creating Coin and Network:', error);
         throw new Error('Failed to create Coin and Network');
     }
 };
@@ -54,6 +55,6 @@ export const calculatePnL = (
         const value = ((currentValue - previousValue) / previousValue) * 100;
         return Number(value.toFixed(2))
     } catch (error) {
-        console.error('Error calculating PnL', error);
+        logger.error('Error calculating PnL', error);
     }
 };

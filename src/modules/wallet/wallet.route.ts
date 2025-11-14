@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import walletController from './wallet.controller';
+import * as walletController from './wallet.controller';
 import authenticate from '../../middlewares/auth.middleware';
 import { sendCryptoInputSchema } from './wallet.schema'
 
@@ -11,7 +11,8 @@ async function walletRoutes(server: FastifyInstance) {
     },
     walletController.sendOut
   )
-  server.get('/retrieve-balance-with-transactions', {
+  server.get('/retrieve-balance-with-transactions', 
+    {
     handler: walletController.getBalanceWithTransactions
   })
 }

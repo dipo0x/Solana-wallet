@@ -1,11 +1,8 @@
 import fastify from 'fastify';
-import indexRoutes from './modules/index/index.route';
-import accountRoutes from './modules/account/account.route';
-import userRoutes from './modules/user/user.route';
-import walletRoutes from './modules/wallet/wallet.route';
-import assetRoutes from './modules/asset/asset.route';
 import dotenv from 'dotenv';
+import { appRoutes } from './routes/app.route';
 import connectDB from './config/database.config';
+import logger from './utils/logger';
 dotenv.config();
 
 export const port = Number(process.env.PORT) || 3000;
@@ -23,36 +20,39 @@ server.get('/healthcheck', async function () {
   return { status: 'Ok' };
 });
 
-async function main() {
-  server.setErrorHandler(async (err, request, reply) => {
-    return reply.code(500).send({
-      status: 500,
-      success: false,
-      message: 'Something went wrong',
-    });
-  }),
-    server.setNotFoundHandler(async (request, reply) => {
-      return reply.code(404).send({
-        status: 404,
-        success: false,
-        message: `You shouldn't be here bro!`,
-      });
-    });
+server.register(async (instance) => {
+  appRoutes.forEach((route) => {
+    instance.register(route.router, { prefix: route.path });
+  });
+}, { prefix: '/api/v1' });
 
-  server.register(indexRoutes, { prefix: '/' })
-  server.register(userRoutes, { prefix: 'api/user/' })
-  server.register(accountRoutes, { prefix: 'api/account/' })
-  server.register(walletRoutes, { prefix: 'api/wallet/' })
-  server.register(assetRoutes, { prefix: 'api/asset/' })
 
+// Error Handler
+server.setErrorHandler(async (err, request, reply) => {
+  reply.code(500).send({
+    status: 500,
+    success: false,
+    message: 'Something went wrong',
+  });
+});
+
+// Not found handler
+server.setNotFoundHandler(async (request, reply) => {
+  reply.code(404).send({
+    status: 404,
+    success: false,
+    message: `You shouldn't be here bro!`,
+  });
+});
+
+
+(async function main() {
   try {
-    await server.listen({ host: host, port: port });
-    await connectDB()
-    console.log('Server ready on port', port);
+    await server.listen({ host, port });
+    await connectDB();
+    logger.info('Server ready on port', port);
   } catch (e) {
-    console.log(e);
+    logger.error(e);
     process.exit(1);
   }
-}
-
-main();
+})();

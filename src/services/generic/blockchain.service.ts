@@ -5,6 +5,7 @@ import { Types } from 'mongoose';
 import { solanaConnection } from '../../config/solana.config';
 import { Coin, Network } from '../../modules/wallet/models/wallet.coin.model';
 import { INetwork } from '../../types/network/network.type';
+import logger from '../../utils/logger';
 
 export const calculateWalletWorth = async (
     walletId: Types.ObjectId
@@ -60,7 +61,7 @@ export const getPriceInUSD = async (symbol: string): Promise<number> => {
         });
         return response.data[symbol.toLowerCase()]?.usd || 0;
     } catch (error) {
-        console.error(`Error fetching price for ${symbol}:`, error);
+        logger.error(`Error fetching price for ${symbol}:`, error);
         return 0;
     }
 };
@@ -102,7 +103,7 @@ export const getBalanceFromChain = async (
 
         throw new Error(`Unsupported network: ${coinName}`);
     } catch (error) {
-        console.error(`Error fetching balance for ${coinName}:`, error);
+        logger.error(`Error fetching balance for ${coinName}:`, error);
         return 0;
     }
 };

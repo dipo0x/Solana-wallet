@@ -1,4 +1,4 @@
-# Solana Wallet
+# Springten Wallet
 
 ### Introduction
 This is simple solana wallet built with MongoDB, Google Cloud, Coingecko and Quicknode. You can send, receive Solana, create wallet, view multiple assets balance among other things.
@@ -26,16 +26,22 @@ yarn install
 Add a .env file following .env.example file example with the values of each variable
 
 ```.env
+PORT
+HOST
+NODE_ENV
+CORS
+MONGODB_URI
+SALT_ROUND
+JWT_SECRET_KEY
 SOLANA_RPC_URL
-PORT 
 SOLANA_DEVNET_API
-ENCRYPTION_KEY 
-IV 
-MONGODB_URI 
-GOOGLE_CLOUD_KEY_RING 
+ENCRYPTION_KEY
+IV
+GOOGLE_CLOUD_KEY_RING
 GOOGLE_CLOUD_KEY
-PROJECT_ID
 GOOGLE_APPLICATION_CREDENTIALS
+PROJECT_ID
+NETWORK_ENVIRONMENT
 NETWORK_ENVIRONMENT 
 ACCESS_TOKEN_EXPIRES_IN
 ACCESS_TOKEN_PRIVATE_KEY

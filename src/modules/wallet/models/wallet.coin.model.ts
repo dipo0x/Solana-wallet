@@ -2,6 +2,7 @@ import { model, Schema } from 'mongoose';
 import { encryptData } from '../../../services/google/encryption.service';
 import { ICoin } from '../../../types/coin/coin.type';
 import { INetwork } from '../../../types/network/network.type';
+import logger from '../../../utils/logger';
 
 const networkSchema = new Schema<INetwork>({
     name: { type: String, required: true },
@@ -20,7 +21,7 @@ networkSchema.pre('save', async function (next) {
         network.privateAddress = await encryptData(network.privateAddress) as string
         next();
     } catch (err) {
-        console.log(err)
+        logger.error(err)
     }
 });
 
